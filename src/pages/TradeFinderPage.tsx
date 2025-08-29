@@ -2,15 +2,15 @@ import { useTradeSelectionContext } from "@/contexts/TradeSelectionContext";
 import { useTradeFinderContext } from "@/contexts/TradeFinderContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLeagueDetailsContext } from "@/contexts/LeagueDetailsContext";
+import { TradeOfferCard } from "@/components/TradeOfferCard";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@radix-ui/react-select";
+} from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 
@@ -21,8 +21,8 @@ export function TradeFinderPage() {
     useTradeSelectionContext();
   const {
     availableTeams,
-    selectedTargetTeams,
-    setSelectedTargetTeams,
+    selectedTargetTeam,
+    setSelectedTargetTeam,
     tradeAnalyses,
     isLoading,
     hasAnyTrades,
@@ -36,14 +36,7 @@ export function TradeFinderPage() {
   };
 
   const handleTeamSelection = (value: string) => {
-    if (value === "all") {
-      setSelectedTargetTeams(availableTeams.map((team) => team.ownerId));
-    } else {
-      const team = availableTeams.find((t) => t.ownerId === value);
-      if (team) {
-        setSelectedTargetTeams([value]);
-      }
-    }
+    setSelectedTargetTeam(value);
   };
 
   if (!leagueDetails || !sourceTeam || selectedPlayers.length === 0) {
@@ -79,22 +72,17 @@ export function TradeFinderPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <label htmlFor="team-filter" className="text-sm font-medium">
-            Trade with:
+          <label htmlFor="trade-partner-select" className="text-sm font-medium">
+            Trade Partner:
           </label>
           <Select
-            value={
-              selectedTargetTeams.length === availableTeams.length
-                ? "all"
-                : selectedTargetTeams[0] || ""
-            }
+            value={selectedTargetTeam || ""}
             onValueChange={handleTeamSelection}
           >
-            <SelectTrigger id="team-filter" className="w-[280px]">
-              <SelectValue placeholder="Select teams to trade with" />
+            <SelectTrigger id="trade-partner-select" className="w-[280px]">
+              <SelectValue placeholder="Select team to trade with" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Teams</SelectItem>
               {availableTeams.map((team) => (
                 <SelectItem key={team.ownerId} value={team.ownerId}>
                   {team.name} ({team.owner})
@@ -104,91 +92,50 @@ export function TradeFinderPage() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Selected Players</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                From {sourceTeam.name} • Total Value: {getTotalValue()}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {selectedPlayers.map((player) => (
-                  <div
-                    key={player.player.id}
-                    className="flex justify-between items-center p-2 bg-muted/50 rounded"
-                  >
-                    <div>
-                      <span className="font-medium">{player.player.name}</span>
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        ({player.player.position})
-                      </span>
-                    </div>
-                    <span className="text-sm">{player.value}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {!selectedTargetTeam ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              Select a team to trade with to see possible offers
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <TradeOfferCard
+                players={selectedPlayers}
+                teamName={sourceTeam.name}
+                teamOwner={sourceTeam.owner}
+                totalValue={getTotalValue()}
+              />
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Possible Trades</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Within 200 points of your players' total value
-              </p>
-            </CardHeader>
-            <CardContent>
+            <div>
               {isLoading ? (
-                <p className="text-muted-foreground">Analyzing trades...</p>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Analyzing trades...</p>
+                </div>
               ) : !hasAnyTrades ? (
-                <p className="text-muted-foreground">No possible trades.</p>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No possible trades.</p>
+                </div>
               ) : (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="h-[75vh] overflow-y-auto space-y-4">
                   {tradeAnalyses.map((analysis) =>
                     analysis.possibleTrades.map((trade, index) => (
-                      <div
+                      <TradeOfferCard
                         key={`${analysis.targetTeam.ownerId}-${index}`}
-                        className="border rounded-lg p-4"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-medium">
-                              {analysis.targetTeam.name}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              ({analysis.targetTeam.owner})
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm">Value: {trade.totalValue}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Diff: {trade.valueDifference}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          {trade.players.map((player) => (
-                            <div
-                              key={player.player.id}
-                              className="flex justify-between text-sm"
-                            >
-                              <span>
-                                {player.player.name} ({player.player.position})
-                              </span>
-                              <span>{player.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                        players={trade.players}
+                        teamName={analysis.targetTeam.name}
+                        teamOwner={analysis.targetTeam.owner}
+                        totalValue={trade.totalValue}
+                      />
                     ))
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
