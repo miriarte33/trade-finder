@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
-import type { Team } from "@/lib/types";
+import type { Team, Position } from "@/lib/types";
 import { analyzeTradesForAllTeams, type TradeAnalysis } from "@/lib/tradeUtils";
 import { useLeagueDetailsContext } from "./LeagueDetailsContext";
 import { useTradeSelectionContext } from "./TradeSelectionContext";
@@ -12,6 +12,10 @@ interface TradeFinderContextType {
   tradeAnalyses: TradeAnalysis[];
   isLoading: boolean;
   hasAnyTrades: boolean;
+  includedPositions: Set<Position>;
+  excludedPositions: Set<Position>;
+  setIncludedPositions: (positions: Set<Position>) => void;
+  setExcludedPositions: (positions: Set<Position>) => void;
 }
 
 const TradeFinderContext = createContext<TradeFinderContextType | undefined>(
@@ -27,6 +31,8 @@ export function TradeFinderProvider({ children }: TradeFinderProviderProps) {
   const { selectedPlayers, sourceTeam } = useTradeSelectionContext();
   const [selectedTargetTeam, setSelectedTargetTeam] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [includedPositions, setIncludedPositions] = useState<Set<Position>>(new Set());
+  const [excludedPositions, setExcludedPositions] = useState<Set<Position>>(new Set());
 
   const availableTeams = useMemo(() => {
     if (!leagueDetails || !sourceTeam) {
@@ -55,14 +61,16 @@ export function TradeFinderProvider({ children }: TradeFinderProviderProps) {
         selectedPlayers,
         leagueDetails.teams,
         sourceTeam.ownerId,
-        selectedTargetTeam ? [selectedTargetTeam] : undefined
+        selectedTargetTeam ? [selectedTargetTeam] : undefined,
+        includedPositions,
+        excludedPositions
       );
 
       return analyses;
     } finally {
       setIsLoading(false);
     }
-  }, [selectedPlayers, leagueDetails, sourceTeam, selectedTargetTeam]);
+  }, [selectedPlayers, leagueDetails, sourceTeam, selectedTargetTeam, includedPositions, excludedPositions]);
 
   const hasAnyTrades = useMemo(() => {
     return tradeAnalyses.some((analysis) => analysis.possibleTrades.length > 0);
@@ -77,6 +85,10 @@ export function TradeFinderProvider({ children }: TradeFinderProviderProps) {
         tradeAnalyses,
         isLoading,
         hasAnyTrades,
+        includedPositions,
+        excludedPositions,
+        setIncludedPositions,
+        setExcludedPositions,
       }}
     >
       {children}

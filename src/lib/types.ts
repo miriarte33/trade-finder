@@ -1,3 +1,5 @@
+export type Position = 'QB' | 'RB' | 'WR' | 'TE' | 'PICK';
+
 export interface League {
   leagueId: string;
   name: string;
