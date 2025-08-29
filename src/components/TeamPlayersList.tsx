@@ -1,4 +1,4 @@
-import type { Player } from "@/lib/types";
+import type { Player, Team } from "@/lib/types";
 import type { SortField, SortOrder } from "@/contexts/LeagueDetailsContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,16 +9,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { SortableTableHead } from "@/components/SortableTableHead";
+import { useTradeSelectionContext } from "@/contexts/TradeSelectionContext";
 
 interface TeamPlayersListProps {
   players: Player[];
+  team: Team;
   sortBy: SortField;
   sortOrder: SortOrder;
   onSort: (field: SortField) => void;
+  hasSelectedPlayers: boolean;
+  onFindTrades: () => void;
 }
 
-export function TeamPlayersList({ players, sortBy, sortOrder, onSort }: TeamPlayersListProps) {
+export function TeamPlayersList({ players, team, sortBy, sortOrder, onSort, hasSelectedPlayers, onFindTrades }: TeamPlayersListProps) {
+  const { selectPlayer, deselectPlayer, isPlayerSelected } = useTradeSelectionContext();
   const getSortLabel = () => {
     switch (sortBy) {
       case 'value':
@@ -36,12 +43,21 @@ export function TeamPlayersList({ players, sortBy, sortOrder, onSort }: TeamPlay
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Players (Sorted by {getSortLabel()})</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Players (Sorted by {getSortLabel()})</CardTitle>
+          <Button 
+            disabled={!hasSelectedPlayers} 
+            onClick={onFindTrades}
+          >
+            Find Trades
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">Select</TableHead>
               <TableHead>Player Name</TableHead>
               <SortableTableHead
                 field="position"
@@ -84,6 +100,18 @@ export function TeamPlayersList({ players, sortBy, sortOrder, onSort }: TeamPlay
           <TableBody>
             {players.map((player) => (
               <TableRow key={player.player.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={isPlayerSelected(player.player.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        selectPlayer(player, team);
+                      } else {
+                        deselectPlayer(player.player.id);
+                      }
+                    }}
+                  />
+                </TableCell>
                 <TableCell className="font-medium">
                   {player.player.name}
                 </TableCell>

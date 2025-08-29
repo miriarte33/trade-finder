@@ -56,6 +56,8 @@ When adding new shadcn/ui components, they should be placed in `src/components/u
 
 **ALWAYS use functions. NEVER use classes.** Types and interfaces are okay but ABSOLUTELY NO CLASSES. Use function declarations, arrow functions, and functional programming patterns instead of class-based approaches.
 
+**ALWAYS use curly brackets for all control statements, even single-line ones.** Single-line control statements can produce bugs and are less readable. Use curly brackets for enhanced readability and better code.
+
 ## Application Architecture Principles
 
 ### Context-First State Management

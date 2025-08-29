@@ -1,4 +1,5 @@
 import { useLeagueDetailsContext } from "@/contexts/LeagueDetailsContext";
+import { useTradeSelectionContext } from "@/contexts/TradeSelectionContext";
 import { TeamPlayersList } from "@/components/TeamPlayersList";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,8 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNavigate, useParams } from "react-router";
 
 export function LeagueDetailsPage() {
+  const navigate = useNavigate();
+  const { leagueId } = useParams<{ leagueId: string }>();
   const {
     leagueDetails,
     isLoading,
@@ -22,6 +26,14 @@ export function LeagueDetailsPage() {
     sortOrder,
     setSortBy,
   } = useLeagueDetailsContext();
+  
+  const { hasSelectedPlayers, clearSelection } = useTradeSelectionContext();
+  
+  const handleFindTrades = () => {
+    if (leagueId) {
+      navigate(`/league/${leagueId}/trades`);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -63,7 +75,10 @@ export function LeagueDetailsPage() {
                   const team = leagueDetails.teams.find(
                     (t) => t.ownerId === value
                   );
-                  if (team) setSelectedTeam(team);
+                  if (team) {
+                    clearSelection();
+                    setSelectedTeam(team);
+                  }
                 }}
               >
                 <SelectTrigger id="team-select" className="w-[280px]">
@@ -97,10 +112,13 @@ export function LeagueDetailsPage() {
 
         {selectedTeam && (
           <TeamPlayersList 
-            players={sortedPlayers} 
+            players={sortedPlayers}
+            team={selectedTeam}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={setSortBy}
+            hasSelectedPlayers={hasSelectedPlayers}
+            onFindTrades={handleFindTrades}
           />
         )}
       </div>

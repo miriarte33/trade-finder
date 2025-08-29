@@ -37,7 +37,9 @@ export function LeagueDetailsProvider({ children, leagueId }: LeagueDetailsProvi
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   const loadLeagueDetails = useCallback(async () => {
-    if (!leagueId) return;
+    if (!leagueId) {
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
@@ -80,7 +82,9 @@ export function LeagueDetailsProvider({ children, leagueId }: LeagueDetailsProvi
   }, [sortBy]);
 
   const sortedPlayers = useMemo(() => {
-    if (!selectedTeam) return [];
+    if (!selectedTeam) {
+      return [];
+    }
     
     const players = [...selectedTeam.players];
     

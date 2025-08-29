@@ -2,21 +2,33 @@ import { Routes, Route, useNavigate, useParams } from "react-router";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useLeaguesContext } from "@/contexts/LeaguesContext";
 import { LeagueDetailsProvider } from "@/contexts/LeagueDetailsContext";
+import { TradeFinderProvider } from "@/contexts/TradeFinderContext";
 import { LoginPage } from "@/pages/LoginPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { LeagueDetailsPage } from "@/pages/LeagueDetailsPage";
+import { TradeFinderPage } from "@/pages/TradeFinderPage";
 import type { League } from "@/lib/types";
 
-function LeagueDetailsWrapper() {
+function LeagueRoutes() {
   const { leagueId } = useParams<{ leagueId: string }>();
-  
+
   if (!leagueId) {
     return <div>League ID not found</div>;
   }
 
   return (
     <LeagueDetailsProvider leagueId={leagueId}>
-      <LeagueDetailsPage />
+      <Routes>
+        <Route index element={<LeagueDetailsPage />} />
+        <Route
+          path="trades"
+          element={
+            <TradeFinderProvider>
+              <TradeFinderPage />
+            </TradeFinderProvider>
+          }
+        />
+      </Routes>
     </LeagueDetailsProvider>
   );
 }
@@ -24,7 +36,8 @@ function LeagueDetailsWrapper() {
 export function AppRouter() {
   const navigate = useNavigate();
   const { username, isAuthenticated, login, logout } = useAuthContext();
-  const { leagues, isLoading, error, loadLeagues, clearLeagues, selectLeague } = useLeaguesContext();
+  const { leagues, isLoading, error, loadLeagues, clearLeagues, selectLeague } =
+    useLeaguesContext();
 
   const handleUsernameSubmit = async (newUsername: string) => {
     await loadLeagues(newUsername);
@@ -34,7 +47,7 @@ export function AppRouter() {
   const handleChangeUser = () => {
     logout();
     clearLeagues();
-    navigate('/');
+    navigate("/");
   };
 
   const handleLeagueSelect = (league: League) => {
@@ -65,7 +78,7 @@ export function AppRouter() {
           />
         }
       />
-      <Route path="/league/:leagueId" element={<LeagueDetailsWrapper />} />
+      <Route path="/league/:leagueId/*" element={<LeagueRoutes />} />
     </Routes>
   );
 }
