@@ -18,6 +18,9 @@ export function LeagueDetailsPage() {
     selectedTeam,
     setSelectedTeam,
     sortedPlayers,
+    sortBy,
+    sortOrder,
+    setSortBy,
   } = useLeagueDetailsContext();
 
   if (isLoading) {
@@ -92,7 +95,14 @@ export function LeagueDetailsPage() {
           </CardContent>
         </Card>
 
-        {selectedTeam && <TeamPlayersList players={sortedPlayers} />}
+        {selectedTeam && (
+          <TeamPlayersList 
+            players={sortedPlayers} 
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={setSortBy}
+          />
+        )}
       </div>
     </AppLayout>
   );

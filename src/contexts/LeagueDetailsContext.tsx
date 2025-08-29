@@ -4,6 +4,9 @@ import { fetchLeagueDetails } from '@/services/fantasycalc';
 import type { FullLeagueDetails, Team } from '@/lib/types';
 import { useAuthContext } from './AuthContext';
 
+export type SortField = 'value' | 'overallRank' | 'starter' | 'position';
+export type SortOrder = 'asc' | 'desc';
+
 interface LeagueDetailsContextType {
   leagueDetails: FullLeagueDetails | null;
   isLoading: boolean;
@@ -11,6 +14,9 @@ interface LeagueDetailsContextType {
   selectedTeam: Team | null;
   setSelectedTeam: (team: Team) => void;
   sortedPlayers: Team['players'];
+  sortBy: SortField;
+  sortOrder: SortOrder;
+  setSortBy: (field: SortField) => void;
   reloadLeagueDetails: () => Promise<FullLeagueDetails | undefined>;
 }
 
@@ -27,6 +33,8 @@ export function LeagueDetailsProvider({ children, leagueId }: LeagueDetailsProvi
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [sortBy, setSortByState] = useState<SortField>('value');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   const loadLeagueDetails = useCallback(async () => {
     if (!leagueId) return;
@@ -38,7 +46,6 @@ export function LeagueDetailsProvider({ children, leagueId }: LeagueDetailsProvi
       const data = await fetchLeagueDetails(leagueId);
       setLeagueDetails(data);
       
-      // Find and set the current user's team as default
       const userTeam = data.teams.find(team => 
         team.owner.toLowerCase() === username.toLowerCase()
       );
@@ -63,10 +70,51 @@ export function LeagueDetailsProvider({ children, leagueId }: LeagueDetailsProvi
     loadLeagueDetails();
   }, [loadLeagueDetails]);
 
+  const setSortBy = useCallback((field: SortField) => {
+    if (field === sortBy) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortByState(field);
+      setSortOrder('desc');
+    }
+  }, [sortBy]);
+
   const sortedPlayers = useMemo(() => {
     if (!selectedTeam) return [];
-    return [...selectedTeam.players].sort((a, b) => b.value - a.value);
-  }, [selectedTeam]);
+    
+    const players = [...selectedTeam.players];
+    
+    players.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'value':
+          comparison = a.value - b.value;
+          break;
+        case 'overallRank':
+          comparison = a.overallRank - b.overallRank;
+          break;
+        case 'starter':
+          if (a.starter === b.starter) {
+            comparison = a.value - b.value;
+          } else {
+            comparison = a.starter ? -1 : 1;
+          }
+          break;
+        case 'position':
+          if (a.player.position === b.player.position) {
+            comparison = b.value - a.value;
+          } else {
+            comparison = a.player.position.localeCompare(b.player.position);
+          }
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+    
+    return players;
+  }, [selectedTeam, sortBy, sortOrder]);
 
   return (
     <LeagueDetailsContext.Provider
@@ -77,6 +125,9 @@ export function LeagueDetailsProvider({ children, leagueId }: LeagueDetailsProvi
         selectedTeam,
         setSelectedTeam,
         sortedPlayers,
+        sortBy,
+        sortOrder,
+        setSortBy,
         reloadLeagueDetails: loadLeagueDetails,
       }}
     >

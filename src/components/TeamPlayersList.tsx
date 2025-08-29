@@ -1,4 +1,5 @@
 import type { Player } from "@/lib/types";
+import type { SortField, SortOrder } from "@/contexts/LeagueDetailsContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -8,27 +9,76 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/SortableTableHead";
 
 interface TeamPlayersListProps {
   players: Player[];
+  sortBy: SortField;
+  sortOrder: SortOrder;
+  onSort: (field: SortField) => void;
 }
 
-export function TeamPlayersList({ players }: TeamPlayersListProps) {
+export function TeamPlayersList({ players, sortBy, sortOrder, onSort }: TeamPlayersListProps) {
+  const getSortLabel = () => {
+    switch (sortBy) {
+      case 'value':
+        return 'Value';
+      case 'overallRank':
+        return 'Overall Rank';
+      case 'starter':
+        return 'Starter Status';
+      case 'position':
+        return 'Position';
+      default:
+        return 'Value';
+    }
+  };
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Players (Sorted by Value)</CardTitle>
+        <CardTitle>Players (Sorted by {getSortLabel()})</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Player Name</TableHead>
-              <TableHead>Position</TableHead>
-              <TableHead className="text-right">Value</TableHead>
-              <TableHead className="text-right">Overall Rank</TableHead>
+              <SortableTableHead
+                field="position"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Position
+              </SortableTableHead>
+              <SortableTableHead
+                field="value"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+                className="text-right"
+              >
+                Value
+              </SortableTableHead>
+              <SortableTableHead
+                field="overallRank"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+                className="text-right"
+              >
+                Overall Rank
+              </SortableTableHead>
               <TableHead className="text-right">Position Rank</TableHead>
-              <TableHead className="text-center">Starter</TableHead>
+              <SortableTableHead
+                field="starter"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+                className="text-center"
+              >
+                Starter
+              </SortableTableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
