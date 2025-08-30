@@ -1,6 +1,5 @@
 import type { Position } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { cn } from "@/lib/utils";
 
 interface PositionFilterProps {
@@ -30,57 +29,36 @@ export function PositionFilter({
   variant,
   className,
 }: PositionFilterProps) {
-  const handleToggle = (position: Position, checked: boolean) => {
-    const newPositions = new Set(selectedPositions);
-    if (checked) {
-      newPositions.add(position);
-    } else {
-      newPositions.delete(position);
-    }
-    onChange(newPositions);
+  const options: MultiSelectOption[] = POSITIONS.map((position) => ({
+    value: position,
+    label: `${position} - ${POSITION_LABELS[position]}`,
+    disabled: disabledPositions.has(position),
+  }));
+
+  const handleChange = (selected: Set<string>) => {
+    onChange(new Set(Array.from(selected) as Position[]));
   };
 
-  return (
-    <Card className={cn("h-full", className)}>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {POSITIONS.map((position) => {
-          const isDisabled = disabledPositions.has(position);
-          const isChecked = selectedPositions.has(position);
+  const placeholder = variant === "include" 
+    ? selectedPositions.size === 0 
+      ? "All positions included" 
+      : `${selectedPositions.size} position${selectedPositions.size > 1 ? 's' : ''} selected`
+    : selectedPositions.size === 0 
+      ? "No positions excluded" 
+      : `${selectedPositions.size} position${selectedPositions.size > 1 ? 's' : ''} excluded`;
 
-          return (
-            <div key={position} className="flex items-center space-x-2">
-              <Checkbox
-                id={`${variant}-${position}`}
-                checked={isChecked}
-                disabled={isDisabled}
-                onCheckedChange={(checked) =>
-                  handleToggle(position, checked as boolean)
-                }
-              />
-              <label
-                htmlFor={`${variant}-${position}`}
-                className={cn(
-                  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed",
-                  isDisabled && "opacity-50"
-                )}
-              >
-                <span className="font-semibold">{position}</span> -{" "}
-                {POSITION_LABELS[position]}
-              </label>
-            </div>
-          );
-        })}
-        {selectedPositions.size === 0 && (
-          <p className="text-xs text-muted-foreground">
-            {variant === "include"
-              ? "All positions will be considered"
-              : "No positions will be excluded"}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+  return (
+    <div className={cn("flex flex-col gap-2", className)}>
+      <label className="text-sm font-medium">{title}</label>
+      <MultiSelect
+        options={options}
+        selected={new Set(Array.from(selectedPositions) as string[])}
+        onChange={handleChange}
+        placeholder={placeholder}
+        searchPlaceholder="Search positions..."
+        emptyText="No positions found"
+        maxCount={3}
+      />
+    </div>
   );
 }
