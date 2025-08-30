@@ -61,8 +61,8 @@ export function LeagueDetailsPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <Card>
+      <div className="flex flex-col h-full gap-6">
+        <Card className="flex-shrink-0">
           <CardHeader>
             <CardTitle className="text-2xl">{leagueDetails.name}</CardTitle>
             <div className="flex items-center gap-4 mt-4">

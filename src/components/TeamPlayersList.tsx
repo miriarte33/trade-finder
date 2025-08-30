@@ -24,36 +24,42 @@ interface TeamPlayersListProps {
   onFindTrades: () => void;
 }
 
-export function TeamPlayersList({ players, team, sortBy, sortOrder, onSort, hasSelectedPlayers, onFindTrades }: TeamPlayersListProps) {
-  const { selectPlayer, deselectPlayer, isPlayerSelected } = useTradeSelectionContext();
+export function TeamPlayersList({
+  players,
+  team,
+  sortBy,
+  sortOrder,
+  onSort,
+  hasSelectedPlayers,
+  onFindTrades,
+}: TeamPlayersListProps) {
+  const { selectPlayer, deselectPlayer, isPlayerSelected } =
+    useTradeSelectionContext();
   const getSortLabel = () => {
     switch (sortBy) {
-      case 'value':
-        return 'Value';
-      case 'overallRank':
-        return 'Overall Rank';
-      case 'starter':
-        return 'Starter Status';
-      case 'position':
-        return 'Position';
+      case "value":
+        return "Value";
+      case "overallRank":
+        return "Overall Rank";
+      case "starter":
+        return "Starter Status";
+      case "position":
+        return "Position";
       default:
-        return 'Value';
+        return "Value";
     }
   };
   return (
-    <Card>
-      <CardHeader>
+    <Card className="flex flex-col flex-1 min-h-0">
+      <CardHeader className="flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle>Players (Sorted by {getSortLabel()})</CardTitle>
-          <Button 
-            disabled={!hasSelectedPlayers} 
-            onClick={onFindTrades}
-          >
+          <Button disabled={!hasSelectedPlayers} onClick={onFindTrades}>
             Find Trades
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>

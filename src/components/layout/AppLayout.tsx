@@ -8,7 +8,7 @@ interface AppLayoutProps {
 export function AppLayout({ children, className = "" }: AppLayoutProps) {
   return (
     <div className={`h-screen overflow-hidden flex flex-col p-4 bg-background ${className}`}>
-      <div className="w-full flex-1 flex flex-col overflow-hidden">{children}</div>
+      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col overflow-hidden">{children}</div>
     </div>
   );
 }

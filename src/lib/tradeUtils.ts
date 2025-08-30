@@ -74,10 +74,15 @@ export function findPossibleTrades(
 
   for (const combination of playerCombinations) {
     if (includedPositions && includedPositions.size > 0) {
-      const hasIncludedPosition = combination.some((player) =>
-        includedPositions.has(player.player.position as Position)
+      const combinationPositions = new Set(
+        combination.map((player) => player.player.position as Position)
       );
-      if (!hasIncludedPosition) {
+
+      const hasAllIncludedPositions = Array.from(includedPositions).every(
+        (position) => combinationPositions.has(position)
+      );
+
+      if (!hasAllIncludedPositions) {
         continue;
       }
     }
