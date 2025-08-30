@@ -1,5 +1,5 @@
 import type { Position } from "@/lib/types";
-import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
+import { MultiSelect, type MultiSelectOption } from "@/components/MultiSelect";
 import { cn } from "@/lib/utils";
 
 interface PositionFilterProps {
@@ -39,13 +39,18 @@ export function PositionFilter({
     onChange(new Set(Array.from(selected) as Position[]));
   };
 
-  const placeholder = variant === "include" 
-    ? selectedPositions.size === 0 
-      ? "All positions included" 
-      : `${selectedPositions.size} position${selectedPositions.size > 1 ? 's' : ''} selected`
-    : selectedPositions.size === 0 
-      ? "No positions excluded" 
-      : `${selectedPositions.size} position${selectedPositions.size > 1 ? 's' : ''} excluded`;
+  const placeholder =
+    variant === "include"
+      ? selectedPositions.size === 0
+        ? "All positions included"
+        : `${selectedPositions.size} position${
+            selectedPositions.size > 1 ? "s" : ""
+          } selected`
+      : selectedPositions.size === 0
+      ? "No positions excluded"
+      : `${selectedPositions.size} position${
+          selectedPositions.size > 1 ? "s" : ""
+        } excluded`;
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
